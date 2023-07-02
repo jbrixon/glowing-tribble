@@ -1,0 +1,28 @@
+{
+  "name": "extensor-cache",
+  "version": "1.0.0",
+  "description": "Simple caching library.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest --silent --detectOpenHandles"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbrixon/extensor-cache-js.git"
+  },
+  "keywords": [
+    "caching"
+  ],
+  "author": "Joe Rixon",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/jbrixon/extensor-cache-js/issues"
+  },
+  "homepage": "https://github.com/jbrixon/extensor-cache-js#readme",
+  "devDependencies": {
+    "@babel/plugin-syntax-import-assertions": "^7.22.5",
+    "@babel/preset-env": "^7.22.5",
+    "babel-jest": "^29.5.0",
+    "jest": "^29.5.0"
+  }
+}
