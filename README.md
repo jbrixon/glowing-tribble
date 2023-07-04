@@ -166,6 +166,9 @@ Use this if your read target is slow-changing. It will read cache first and only
 #### Read-Behind
 `ReadStrategies.readAround`
 Use this if your read target is fast-changing. It will call the callback first and only go to cache if the callback returns a rejected Promise.
+#### Cache only
+`ReadStrategies.cacheOnly`
+Use this if you just want an in-memory cache. It will only read from the cache and not attempt to call any callback.
 ### Write Strategies
 #### Write-Through
 `WriteStrategies.writeThrough`
@@ -174,6 +177,9 @@ Use this if you care about consistency. It will only update the cache if the cal
 #### Write-Back
 `WriteStrategies.writeBack`
 Use this if you don't care about consistency. It will update the cache, return, then call the callback in the background. Retrying the callback can be configured, but will fail quietly when the retry limit is reached.
+#### Cache only
+`WriteStrategies.cacheOnly`
+Use this if you just want an in-memory cache. It will only write to the cache and not attempt to call any callback.
 
 ---
 ## Options
