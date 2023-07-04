@@ -1,6 +1,6 @@
 import ExtensorCache from "../src/extensorCache";
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
-import CacheConfig from "../src/cacheConfig";
+import KeyConfig from "../src/keyConfig";
 import ReadStrategies from "../src/readStrategies";
 
 
@@ -17,7 +17,7 @@ describe("read-through caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
     
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => {};
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);
@@ -33,7 +33,7 @@ describe("read-through caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { return testValue; };
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);
@@ -48,7 +48,7 @@ describe("read-through caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { return testValue; };
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);
@@ -66,7 +66,7 @@ describe("read-through caching", () => {
     const testKey = `this/${verb}/a/test/${noun}`;
     let paramsReceived = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async (context) => { 
       paramsReceived = context.params.verb === verb && context.params.noun === noun;
     };

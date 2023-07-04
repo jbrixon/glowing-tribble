@@ -24,11 +24,11 @@ When fetching data, return it from an async callback to cache it:
 import {
   ExtensorCache,
   InMemoryStore,
-  CacheConfig,
+  KeyConfig,
 } from "extensor-cache";
 
 const cache = new ExtensorCache(new InMemoryStore());
-const config = new CacheConfig("examples/{exampleName}/objects/{object}");
+const config = new KeyConfig("examples/{exampleName}/objects/{object}");
 config.readCallback = async (context) => {
   return await someLongRunningFetch(context.params.exampleName, context.params.object);
 }
@@ -44,7 +44,7 @@ Key patterns idenfity cached variables. Extensor cache supports both static and 
 ### Static patterns
 ```javascript
 // ...
-const config = new CacheConfig("examples/readme");
+const config = new KeyConfig("examples/readme");
 config.readCallback = async () => {
   return await someLongRunningFetch("https://example.com/some-fixed-endpoint");
 }
@@ -55,7 +55,7 @@ cache.register(config);
 Parameters can be added to key patterns by wrapping them in curly brackets. The string inside the curly brackets is used to name the parameter. Parameters can be accessed inside the callback via the `context` object that is passed:
 ```javascript
 // ...
-const config = new CacheConfig("examples/{exampleName}/objects/{object}");
+const config = new KeyConfig("examples/{exampleName}/objects/{object}");
 config.readCallback = async (context) => {
   // here we have access to
   //   - context.params.exampleName
@@ -72,14 +72,14 @@ cache.register(config);
 ## Cache Configuration
 ###### ttl
 ```javascript
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.ttl = 600; // time in seconds for the cache entry to live
 cache.register(config);
 
 ```
 ###### readCallback
 ```javascript
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.readCallback = async (context) => {
   // the callback to run when a read is requested.
   // throw an error if the read was unsuccessful.
@@ -92,7 +92,7 @@ cache.register(config);
 ```javascript
 import { ReadStrategies } from "extensor-cache";
 
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.readStrategy = ReadStrategies.readThrough; 
 // Tells the cache which read strategy to use for this pattern.
 // Should be something imported from ReadStrategies.
@@ -103,7 +103,7 @@ cache.register(config);
 ```
 ###### writeCallback
 ```javascript
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.writeCallback = async (context) => {
   // the callback to run when a write is triggered.
   // throw an error if the write does not complete. 
@@ -120,7 +120,7 @@ cache.register(config);
 ```javascript
 import { WriteStrategies } from "extensor-cache";
 
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.writeStrategy = WriteStrategies.writeThrough; 
 // Tells the cache which write strategy to use for this pattern.
 // Should be something imported from WriteStrategies.
@@ -131,7 +131,7 @@ cache.register(config);
 ```
 ###### writeRetryCount
 ```javascript
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.writeCallback = async (context) => {
   return await someLongRunningFetch(context.params.exampleName);
 };
@@ -145,7 +145,7 @@ cache.register(config);
 ```
 ###### writeRetryInterval
 ```javascript
-const config = new CacheConfig("examples/{exampleName}");
+const config = new KeyConfig("examples/{exampleName}");
 config.writeCallback = async (context) => {
   return await someLongRunningFetch(context.params.exampleName);
 };

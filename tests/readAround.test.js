@@ -1,6 +1,6 @@
 import ExtensorCache from "../src/extensorCache";
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
-import CacheConfig from "../src/cacheConfig";
+import KeyConfig from "../src/keyConfig";
 import ReadStrategies from "../src/readStrategies";
 
 
@@ -17,7 +17,7 @@ describe("read-around caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { return testValue; };
     config.readStrategy = ReadStrategies.readAround;
     cache.register(config);
@@ -33,7 +33,7 @@ describe("read-around caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { throw new Error(); };
     config.readStrategy = ReadStrategies.readAround;
     cache.register(config);
@@ -49,7 +49,7 @@ describe("read-around caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
     
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { return testValue; };
     config.readStrategy = ReadStrategies.readAround;
     cache.register(config);
@@ -67,7 +67,7 @@ describe("read-around caching", () => {
     const testPattern = "test/pattern";
     const errorMessage = "Test failure"
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async () => { throw new Error(errorMessage); };
     config.readStrategy = ReadStrategies.readAround;
     cache.register(config);
@@ -85,7 +85,7 @@ describe("read-around caching", () => {
     const testKey = `this/${verb}/a/test/${noun}`;
     let paramsReceived = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.readCallback = async (context) => { 
       paramsReceived = context.params.verb === verb && context.params.noun === noun;
     };

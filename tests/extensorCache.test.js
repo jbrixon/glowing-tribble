@@ -1,6 +1,6 @@
 import ExtensorCache from "../src/extensorCache";
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
-import CacheConfig from "../src/cacheConfig";
+import KeyConfig from "../src/keyConfig";
 import ReadStrategies from "../src/readStrategies";
 
 
@@ -94,7 +94,7 @@ describe("extensorCache", () => {
 
   test("an error is thrown when an invalid key pattern is registered", () => {
     const testPattern = "test/{}";
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     expect(() => cache.register(config)).toThrow();
   });
 });

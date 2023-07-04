@@ -2,7 +2,7 @@ import ReadStrategies from "./readStrategies";
 import WriteStrategies from "./writeStrategies";
 
 
-class CacheConfig {
+class KeyConfig {
   constructor(pattern, ttl=600, readCallback=()=>{}, readStrategy=ReadStrategies.cacheOnly, writeCallback=()=>{}, writeStrategy=WriteStrategies.cacheOnly) {
     this.pattern = pattern;
     this.ttl = ttl;
@@ -16,4 +16,4 @@ class CacheConfig {
 }
 
 
-export default CacheConfig;
+export default KeyConfig;

@@ -1,4 +1,4 @@
-import CacheConfig from "./cacheConfig";
+import KeyConfig from "./keyConfig";
 import ExtensorCache from "./extensorCache";
 import InMemoryStoreAdapter from "./inMemoryStoreAdapter";
 import ReadStrategies from "./readStrategies";
@@ -6,7 +6,7 @@ import WriteStrategies from "./writeStrategies";
 
 
 export default {
-  CacheConfig,
+  KeyConfig,
   ExtensorCache,
   InMemoryStore: InMemoryStoreAdapter,
   ReadStrategies,

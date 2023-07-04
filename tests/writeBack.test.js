@@ -1,6 +1,6 @@
 import ExtensorCache from "../src/extensorCache";
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
-import CacheConfig from "../src/cacheConfig";
+import KeyConfig from "../src/keyConfig";
 import WriteStrategies from "../src/writeStrategies";
 
 
@@ -18,7 +18,7 @@ describe("write-back caching", () => {
     const testValue = "result";
     let called = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => { called = true; };
     config.writeStrategy = WriteStrategies.writeBack;
     cache.register(config);
@@ -34,7 +34,7 @@ describe("write-back caching", () => {
     const goodResult = "good result";
     const badResult = "bad result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => {};
     config.writeStrategy = WriteStrategies.writeBack;
     cache.register(config);
@@ -52,7 +52,7 @@ describe("write-back caching", () => {
     const goodResult = "good result";
     const badResult = "bad result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => { throw new Error(); };
     config.writeStrategy = WriteStrategies.writeBack;
     cache.register(config);
@@ -69,7 +69,7 @@ describe("write-back caching", () => {
     const testPattern = "test/pattern";
     const goodResult = "good result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => { throw new Error(); };
     config.writeStrategy = WriteStrategies.writeBack;
     cache.register(config);
@@ -86,7 +86,7 @@ describe("write-back caching", () => {
     const waitFor = (retries + 2) * interval;
     let countRetries = -1; // don't count first try
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => { 
       countRetries++;
       throw new Error();
@@ -113,7 +113,7 @@ describe("write-back caching", () => {
     let waitTimes = [];
     let timeOfLastCall;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => {
       if (timeOfLastCall) waitTimes.push(new Date - timeOfLastCall);
       timeOfLastCall = new Date();
@@ -141,7 +141,7 @@ describe("write-back caching", () => {
     const testValue = "result";
     let paramsReceived = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async (context) => { 
       paramsReceived = context.params.verb === verb && context.params.noun === noun;
     };

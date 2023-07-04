@@ -1,6 +1,6 @@
 import ExtensorCache from "../src/extensorCache";
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
-import CacheConfig from "../src/cacheConfig";
+import KeyConfig from "../src/keyConfig";
 import WriteStrategies from "../src/writeStrategies";
 
 
@@ -18,7 +18,7 @@ describe("write-through caching", () => {
     const testValue = "result";
     let called = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => { called = true; };
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
@@ -33,7 +33,7 @@ describe("write-through caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => {};
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
@@ -49,7 +49,7 @@ describe("write-through caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => {
       throw new Error();
     };
@@ -71,7 +71,7 @@ describe("write-through caching", () => {
     const testValue = "result";
     const testError = new Error("just a test...");
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async () => {
       throw testError;
     };
@@ -90,7 +90,7 @@ describe("write-through caching", () => {
     const testValue = "result";
     let paramsReceived = false;
 
-    const config = new CacheConfig(testPattern);
+    const config = new KeyConfig(testPattern);
     config.writeCallback = async (context) => { 
       paramsReceived = context.params.verb === verb && context.params.noun === noun;
     };
