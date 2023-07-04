@@ -1,6 +1,6 @@
-function checkForMatch(pattern, string) {
+function checkForMatch(pattern, key) {
   const regex = pattern.replace(/{(.*?)}/g, '(?<$1>.*?)');
-  const match = string.match(new RegExp(`^${regex}$`));
+  const match = key.match(new RegExp(`^${regex}$`));
 
   if (!match) return { match: false };
 
@@ -13,6 +13,7 @@ function checkForMatch(pattern, string) {
   return {
     match: true,
     params,
+    key,
   };
 }
 

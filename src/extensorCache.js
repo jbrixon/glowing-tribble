@@ -8,11 +8,11 @@ import WriteStrategies from "./writeStrategies";
 
 class ExtensorCache {
   #store;
-  #configRegister;
+  #patternRegister;
   
   constructor(store) {
     this.#store = store;
-    this.#configRegister = [];
+    this.#patternRegister = [];
   }
 
 
@@ -20,21 +20,20 @@ class ExtensorCache {
     const route = this.#findRoute(key);
 
     // write-through
-    if (route?.cachingConfig.writeStrategy === WriteStrategies.writeThrough) {
-      try {
-        await route.cachingConfig.writeCallback(route.context);
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    // write-back
-    if (route?.cachingConfig.writeStrategy === WriteStrategies.writeBack) {
-      this.#writeBack(route);
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
+      return route.keyConfig.writeCallback(route.context)
+        .then(() => {
+          this.#store.put(key, value, route?.keyConfig.ttl);
+        });
     }
 
     // no write strategy
-    this.#store.put(key, value, route?.cachingConfig.ttl);
+    this.#store.put(key, value, route?.keyConfig.ttl);
+
+    // write-back
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeBack) {
+      return this.#writeBack(route);
+    }
   }
 
 
@@ -42,20 +41,20 @@ class ExtensorCache {
     const route = this.#findRoute(key);
 
     // read-through
-    if (route?.cachingConfig.readStrategy === ReadStrategies.readThrough) {
+    if (route?.keyConfig.readStrategy === ReadStrategies.readThrough) {
       const cachedValue = this.#store.get(key);
       if (cachedValue !== undefined) return cachedValue;
-      const freshValue = await route.cachingConfig.readCallback(route.context);
-      this.#store.put(key, freshValue, route.cachingConfig.ttl);
+      const freshValue = await route.keyConfig.readCallback(route.context);
+      this.#store.put(key, freshValue, route.keyConfig.ttl);
       return freshValue;
     }
 
     // read-around
-    if (route?.cachingConfig.readStrategy == ReadStrategies.readAround) {
+    if (route?.keyConfig.readStrategy == ReadStrategies.readAround) {
       let freshValue;
       try {
-        freshValue = await route.cachingConfig.readCallback(route.context);
-        this.#store.put(key, freshValue, route.cachingConfig.ttl);
+        freshValue = await route.keyConfig.readCallback(route.context);
+        this.#store.put(key, freshValue, route.keyConfig.ttl);
       } catch (error) {        
         freshValue = this.#store.get(key);
         if (freshValue === undefined) {
@@ -80,7 +79,7 @@ class ExtensorCache {
     if (!keyPatternIsvalid(config.pattern)) {
       throw new Error("Invalid key pattern!");
     }
-    this.#configRegister.push(config);
+    this.#patternRegister.push(config);
   }
 
 
@@ -105,26 +104,36 @@ class ExtensorCache {
 
 
   async #writeBack(route) {
-    let tryCount = route.cachingConfig.writeRetryCount + 1;
+    const rejectDelay = (reason) => {
+      return new Promise((resolve, reject) => {
+        console.info(`Write back for key '${route.context.key}' failed due to ${reason}`)
+        setTimeout(reject.bind(null, reason), route.keyConfig.writeRetryInterval);
+      });
+    };
+
+    const rejectQuit = (reason) => {
+      console.info(`Write back for key '${route.context.key}' failed due to ${reason}`);
+      console.warn(`Write back for key '${route.context.key}' failed after ${tryCount} attempts. Giving up.`);
+    };
+
+    const tryCount = route.keyConfig.writeRetryCount + 1;
+    let p = Promise.reject();
+
     for (let i = 0; i < tryCount; i++) {
-      try {
-        await route.cachingConfig.writeCallback(route.context);
-        return;
-      } catch (error) {
-        console.info(error);
-        await new Promise(resolve => setTimeout(resolve, route.cachingConfig.writeRetryInterval));
-      }
+      p = p.catch(() => route.keyConfig.writeCallback(route.context))
+            .catch(i < tryCount - 1 ? rejectDelay : rejectQuit);
     }
-    console.warn(`Write back failed after ${tryCount} attempts. Giving up.`);
+
+    return p;
   }
 
 
   #findRoute(key) {
-    for (const cachingConfig of this.#configRegister) {
-      const context = checkForMatch(cachingConfig.pattern, key);
+    for (const keyConfig of this.#patternRegister) {
+      const context = checkForMatch(keyConfig.pattern, key);
       if (context.match) {
         return {
-          cachingConfig,
+          keyConfig,
           context,
         };
       }

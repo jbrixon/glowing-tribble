@@ -6,6 +6,7 @@ import WriteStrategies from "../src/writeStrategies";
 
 describe("write-back caching", () => {
   let cache, store;
+  jest.useFakeTimers({doNotFake: ["setTimeout"]});
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();
@@ -16,16 +17,15 @@ describe("write-back caching", () => {
   test("the write callback is called", async () => {
     const testPattern = "test/pattern";
     const testValue = "result";
-    let called = false;
 
     const config = new KeyConfig(testPattern);
-    config.writeCallback = async () => { called = true; };
+    config.writeCallback = jest.fn();
     config.writeStrategy = WriteStrategies.writeBack;
     cache.register(config);
     
     await cache.put(testPattern, testValue);
 
-    expect(called).toEqual(true);
+    expect(config.writeCallback).toBeCalled();
   });
 
 
@@ -42,7 +42,7 @@ describe("write-back caching", () => {
     store.put(testPattern, badResult);
 
     await cache.put(testPattern, goodResult);
-
+    
     expect(store.get(testPattern)).toEqual(goodResult);
   });
 
@@ -82,54 +82,53 @@ describe("write-back caching", () => {
     const testPattern = "test/pattern";
     const testValue = "result";
     const retries = 3;
-    const interval = 100;
-    const waitFor = (retries + 2) * interval;
-    let countRetries = -1; // don't count first try
+    const interval = 1;
 
     const config = new KeyConfig(testPattern);
-    config.writeCallback = async () => { 
-      countRetries++;
+    config.writeCallback = jest.fn(async () => {
       throw new Error();
-    };
+    });
     config.writeStrategy = WriteStrategies.writeBack;
     config.writeRetryCount = retries;
     config.writeRetryInterval = interval;
     cache.register(config);
     
     await cache.put(testPattern, testValue);
-    await new Promise(resolve => setTimeout(resolve, waitFor));
 
-    expect(countRetries).toEqual(retries);
+    expect(config.writeCallback).toHaveBeenCalledTimes(retries + 1);
   });
 
 
   test("the callback is called at the requested interval", async () => {
+    jest.useFakeTimers();
+
     const testPattern = "test/pattern";
     const testValue = "result";
     const retries = 3;
     const interval = 100;
-    const waitFor = (retries + 2) * interval;
-    
-    let waitTimes = [];
-    let timeOfLastCall;
+
+    const callTimes = [];
 
     const config = new KeyConfig(testPattern);
-    config.writeCallback = async () => {
-      if (timeOfLastCall) waitTimes.push(new Date - timeOfLastCall);
-      timeOfLastCall = new Date();
-      if (waitTimes.length < retries) throw new Error();
-    };
+    config.writeCallback = jest.fn(async () => {
+      callTimes.push(new Date());
+      throw new Error();
+    });
     config.writeStrategy = WriteStrategies.writeBack;
     config.writeRetryCount = retries;
     config.writeRetryInterval = interval;
     cache.register(config);
-    
-    await cache.put(testPattern, testValue);
-    await new Promise(resolve => setTimeout(resolve, waitFor));
 
-    for (const waitTime of waitTimes) {
-      expect(waitTime).toBeGreaterThanOrEqual(interval);
+    const putPromise = cache.put(testPattern, testValue);
+    
+    for (let i = 0; i <= retries; i++) {
+      await jest.advanceTimersByTimeAsync(interval)
     }
+    await putPromise;
+
+    expect(callTimes[3] - callTimes[2]).toEqual(interval);
+    expect(callTimes[2] - callTimes[1]).toEqual(interval);
+    expect(callTimes[1] - callTimes[0]).toEqual(interval);
   });
 
 

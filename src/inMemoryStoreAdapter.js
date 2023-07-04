@@ -3,6 +3,8 @@ class InMemoryStoreAdapter {
   
   constructor() {
     this.#cache = {};
+
+    setInterval(() => this.#activelyDeleteExpiredValues(), 100);
   }
 
   put(key, value, ttl=0) {
@@ -18,14 +20,7 @@ class InMemoryStoreAdapter {
 
   get(key) {
     if (!(key in this.#cache)) return;
-    const cache = this.#cache[key];
-
-    if (cache.ttl !== 0 && cache.expires < new Date()) { // expired
-      delete this.#cache[key];
-      return;
-    }
-
-    return cache.value;
+    return this.#checkForFreshness(this.#cache[key]);
   }
 
   evict(key) {
@@ -38,6 +33,31 @@ class InMemoryStoreAdapter {
 
   size() {
     return Object.keys(this.#cache).length;
+  }
+
+
+  #checkForFreshness(cache) {
+    if (cache.ttl !== 0 && cache.expires < new Date()) { // expired
+      delete this.#cache[key];
+      return;
+    }
+
+    return cache.value;
+  }
+
+
+  #activelyDeleteExpiredValues() {
+    const keys = Object.keys(this.#cache);
+    const selectedKeys = [];
+
+    for (let i = 0, c = Math.min(keys.length, 20); i < c; i++) {
+      const randomIndex = Math.floor(Math.random() * keys.length);
+      selectedKeys.push(keys[randomIndex]);
+    }
+
+    for (const key of selectedKeys) {
+      this.#checkForFreshness(this.#cache[key]);
+    }
   }
 }
 

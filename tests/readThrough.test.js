@@ -6,6 +6,7 @@ import ReadStrategies from "../src/readStrategies";
 
 describe("read-through caching", () => {
   let cache, store;
+  jest.useFakeTimers();
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();

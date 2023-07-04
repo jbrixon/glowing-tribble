@@ -6,6 +6,7 @@ import WriteStrategies from "../src/writeStrategies";
 
 describe("write-through caching", () => {
   let cache, store;
+  jest.useFakeTimers();
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();
