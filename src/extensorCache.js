@@ -1,4 +1,7 @@
-import { checkForMatch } from "./patternMatching";
+import {
+  checkForMatch,
+  keyPatternIsvalid,
+} from "./patternMatching";
 import ReadStrategies from "./readStrategies";
 import WriteStrategies from "./writeStrategies";
 
@@ -73,6 +76,34 @@ class ExtensorCache {
   }
 
 
+  register(config) {
+    if (!keyPatternIsvalid(config.pattern)) {
+      throw new Error("Invalid key pattern!");
+    }
+    this.#configRegister.push(config);
+  }
+
+
+  evict(key) {
+    this.#store.evict(key);
+  }
+
+
+  clear() {
+    this.#store.clear();
+  }
+
+
+  containsKey(key) {
+    return this.#store.get(key) !== undefined;
+  }
+
+
+  size() {
+    return this.#store.size();
+  }
+
+
   async #writeBack(route) {
     let tryCount = route.cachingConfig.writeRetryCount + 1;
     for (let i = 0; i < tryCount; i++) {
@@ -98,31 +129,6 @@ class ExtensorCache {
         };
       }
     }
-  }
-
-
-  register(config) {
-    this.#configRegister.push(config);
-  }
-
-
-  evict(key) {
-    this.#store.evict(key);
-  }
-
-
-  clear() {
-    this.#store.clear();
-  }
-
-
-  containsKey(key) {
-    return this.#store.get(key) !== undefined;
-  }
-
-
-  size() {
-    return this.#store.size();
   }
 }
 

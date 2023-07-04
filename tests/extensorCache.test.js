@@ -90,4 +90,11 @@ describe("extensorCache", () => {
 
     expect(store.size()).toEqual(0);
   });
+
+
+  test("an error is thrown when an invalid key pattern is registered", () => {
+    const testPattern = "test/{}";
+    const config = new CacheConfig(testPattern);
+    expect(() => cache.register(config)).toThrow();
+  });
 });
