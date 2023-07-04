@@ -95,8 +95,9 @@ import { ReadStrategies } from "extensor-cache";
 const config = new CacheConfig("examples/{exampleName}");
 config.readStrategy = ReadStrategies.readThrough; 
 // Tells the cache which read strategy to use for this pattern.
-// Must be something imported from ReadStrategies.
-// Default is read-through.
+// Should be something imported from ReadStrategies.
+// Any other value will cause cache-only to be used.
+// Default is cache-only.
 cache.register(config);
 
 ```
@@ -122,8 +123,9 @@ import { WriteStrategies } from "extensor-cache";
 const config = new CacheConfig("examples/{exampleName}");
 config.writeStrategy = WriteStrategies.writeThrough; 
 // Tells the cache which write strategy to use for this pattern.
-// Must be something imported from WriteStrategies.
-// Default is write-through.
+// Should be something imported from WriteStrategies.
+// Any other value will cause cache-only to be used.
+// Default is cache-only.
 cache.register(config);
 
 ```
