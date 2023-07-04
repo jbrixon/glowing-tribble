@@ -3,7 +3,7 @@ import WriteStrategies from "./writeStrategies";
 
 
 class KeyConfig {
-  constructor(pattern, ttl=600, readCallback=()=>{}, readStrategy=ReadStrategies.cacheOnly, writeCallback=()=>{}, writeStrategy=WriteStrategies.cacheOnly) {
+  constructor(pattern, ttl=0, readCallback=()=>{}, readStrategy=ReadStrategies.cacheOnly, writeCallback=()=>{}, writeStrategy=WriteStrategies.cacheOnly) {
     this.pattern = pattern;
     this.ttl = ttl;
     this.readCallback = readCallback;

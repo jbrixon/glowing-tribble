@@ -34,7 +34,7 @@ class ExtensorCache {
     }
 
     // no write strategy
-    this.#store.put(key, value);
+    this.#store.put(key, value, route?.cachingConfig.ttl);
   }
 
 
@@ -46,7 +46,7 @@ class ExtensorCache {
       const cachedValue = this.#store.get(key);
       if (cachedValue !== undefined) return cachedValue;
       const freshValue = await route.cachingConfig.readCallback(route.context);
-      this.#store.put(key, freshValue);
+      this.#store.put(key, freshValue, route.cachingConfig.ttl);
       return freshValue;
     }
 
@@ -55,7 +55,7 @@ class ExtensorCache {
       let freshValue;
       try {
         freshValue = await route.cachingConfig.readCallback(route.context);
-        this.#store.put(key, freshValue);
+        this.#store.put(key, freshValue, route.cachingConfig.ttl);
       } catch (error) {        
         freshValue = this.#store.get(key);
         if (freshValue === undefined) {
