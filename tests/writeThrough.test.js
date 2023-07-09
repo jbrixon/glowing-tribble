@@ -1,12 +1,11 @@
 import ExtensorCache from "../src/extensorCache";
-import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
+import InMemoryStoreAdapter from "./testStoreAdapter";
 import KeyConfig from "../src/keyConfig";
 import WriteStrategies from "../src/writeStrategies";
 
 
 describe("write-through caching", () => {
   let cache, store;
-  jest.useFakeTimers();
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();

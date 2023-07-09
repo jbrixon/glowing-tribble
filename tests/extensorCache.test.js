@@ -1,12 +1,10 @@
 import ExtensorCache from "../src/extensorCache";
-import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
+import InMemoryStoreAdapter from "./testStoreAdapter";
 import KeyConfig from "../src/keyConfig";
-import ReadStrategies from "../src/readStrategies";
 
 
 describe("extensorCache", () => {
   let cache, store;
-  jest.useFakeTimers();
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();

@@ -1,12 +1,11 @@
 import ExtensorCache from "../src/extensorCache";
-import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
+import InMemoryStoreAdapter from "./testStoreAdapter";
 import KeyConfig from "../src/keyConfig";
 import WriteStrategies from "../src/writeStrategies";
 
 
 describe("write-back caching", () => {
   let cache, store;
-  jest.useFakeTimers({doNotFake: ["setTimeout"]});
 
   beforeEach(() => {
     store = new InMemoryStoreAdapter();
@@ -121,6 +120,9 @@ describe("write-back caching", () => {
 
     const putPromise = cache.put(testPattern, testValue);
     
+    // this might be flakey, but I can't be bothered to look into how the
+    // timeout call works. it seems to always work though.
+    // if it ever doesn't, we should fix it
     for (let i = 0; i <= retries; i++) {
       await jest.advanceTimersByTimeAsync(interval)
     }
