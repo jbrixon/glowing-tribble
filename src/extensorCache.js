@@ -32,7 +32,7 @@ class ExtensorCache {
 
     // write-back
     if (route?.keyConfig.writeStrategy === WriteStrategies.writeBack) {
-      return this.#writeBack(route);
+      return this.#writeBack(route, route.keyConfig.writeCallback);
     }
   }
 
@@ -75,16 +75,33 @@ class ExtensorCache {
   }
 
 
+  async evict(key) {
+    const route = this.#findRoute(key);
+    if (!route) return;
+    
+        // write-through
+    if (route.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
+      return route.keyConfig.evictCallback(route.context)
+        .then(() => {
+          this.#store.evict(key);
+        });
+    }
+
+    // no write strategy
+    this.#store.evict(key);
+
+    // write-back
+    if (route.keyConfig.writeStrategy === WriteStrategies.writeBack) {
+      return this.#writeBack(route, route.keyConfig.evictCallback);
+    }
+  }
+
+
   register(config) {
     if (!keyPatternIsvalid(config.pattern)) {
       throw new Error("Invalid key pattern!");
     }
     this.#patternRegister.push(config);
-  }
-
-
-  evict(key) {
-    this.#store.evict(key);
   }
 
 
@@ -103,7 +120,7 @@ class ExtensorCache {
   }
 
 
-  async #writeBack(route) {
+  async #writeBack(route, callback) {
     const rejectDelay = (reason) => {
       return new Promise((resolve, reject) => {
         console.info(`Write back for key '${route.context.key}' failed due to ${reason}`)
@@ -116,11 +133,11 @@ class ExtensorCache {
       console.warn(`Write back for key '${route.context.key}' failed after ${tryCount} attempts. Giving up.`);
     };
 
-    const tryCount = route.keyConfig.writeRetryCount + 1;
+    const tryCount = route.keyConfig.writeRetryCount + 1; // include initial attempt
     let p = Promise.reject();
 
     for (let i = 0; i < tryCount; i++) {
-      p = p.catch(() => route.keyConfig.writeCallback(route.context))
+      p = p.catch(() => callback(route.context))
             .catch(i < tryCount - 1 ? rejectDelay : rejectQuit);
     }
 

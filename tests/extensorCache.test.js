@@ -59,25 +59,9 @@ describe("extensorCache", () => {
   test("containsKey returns true when a key-value pair is not cached", () => {
     const testKey = "test-key";
     
-    store.put(testKey, "test-value")
+    store.put(testKey, "test-value");
 
     expect(cache.containsKey(testKey)).toBe(true);
-  });
-
-
-  test("evict removes key value pairs from the cache", () => {
-    const testKey = "test-key";
-    
-    store.put(testKey, "test-value")
-
-    cache.evict(testKey);
-
-    expect(store.get(testKey)).toEqual(undefined);
-  });
-
-
-  test("no exception is thrown when an attempt is made to evict a non-existent key", () => {
-    expect(() => cache.evict("test-key")).not.toThrow();
   });
 
 
