@@ -74,13 +74,35 @@ class ExtensorCache {
     return cachedValue;
   }
 
+  
+  async update(key, value) {
+    const route = this.#findRoute(key);
+    const updateCallbackIsGiven = route.keyConfig.updateCallback !== undefined;
+    const callback = updateCallbackIsGiven ? route.keyConfig.updateCallback : route.keyConfig.writeCallback;
+
+    // write-through
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
+      return callback(route.context)
+        .then(() => {
+          this.#store.put(key, value, route?.keyConfig.ttl);
+        });
+    }
+
+    // no write strategy
+    this.#store.put(key, value, route?.keyConfig.ttl);
+
+    // write-back
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeBack) {
+      return this.#writeBack(route, callback);
+    }
+  }
+
 
   async evict(key) {
     const route = this.#findRoute(key);
-    if (!route) return;
     
-        // write-through
-    if (route.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
+    // write-through
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
       return route.keyConfig.evictCallback(route.context)
         .then(() => {
           this.#store.evict(key);
@@ -91,7 +113,7 @@ class ExtensorCache {
     this.#store.evict(key);
 
     // write-back
-    if (route.keyConfig.writeStrategy === WriteStrategies.writeBack) {
+    if (route?.keyConfig.writeStrategy === WriteStrategies.writeBack) {
       return this.#writeBack(route, route.keyConfig.evictCallback);
     }
   }

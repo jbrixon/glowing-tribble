@@ -153,6 +153,36 @@ config.writeRetryInterval = 3000; // waits 3000ms before retrying the write call
 cache.register(config);
 
 ```
+###### evictCallback
+```javascript
+const config = new KeyConfig("examples/{exampleName}");
+config.evictCallback = async (context) => {
+  // the callback to run when a delete is triggered.
+  // evictions share the write strategy and any write retry configuration.
+  // throw an error if the delete does not complete.
+  // if no error is thrown, the delete will be considered successful.
+  // this callback shouldn't return anything.
+  return await someLongRunningDeleteTask(context.params.exampleName);
+};
+cache.register(config);
+
+```
+###### updateCallback
+```javascript
+const config = new KeyConfig("examples/{exampleName}");
+config.updateCallback = async (context) => {
+  // the callback to run when an update is triggered. this can be useful for when
+  // you need to work with something that isn't idempotent, so you need different
+  // actions for creates and updates .
+  // updates share the write strategy and any write retry configuration.
+  // throw an error if the update does not complete.
+  // if no error is thrown, the update will be considered successful.
+  // this callback shouldn't return anything.
+  return await someLongRunningUpdateTask(context.params.exampleName);
+};
+cache.register(config);
+
+```
 
 ---
 ## Examples

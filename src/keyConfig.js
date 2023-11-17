@@ -13,7 +13,7 @@ class KeyConfig {
     this.writeRetryCount = 1;
     this.writeRetryInterval = 1000;
     this.evictCallback = () => {};
-    this.updateCallback = () => {};
+    this.updateCallback = undefined;
   }
 }
 
