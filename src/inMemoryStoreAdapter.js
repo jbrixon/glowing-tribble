@@ -20,7 +20,7 @@ class InMemoryStoreAdapter {
 
   get(key) {
     if (!(key in this.#cache)) return;
-    return this.#checkForFreshness(this.#cache[key]);
+    return this.#checkForFreshness(key);
   }
 
   evict(key) {
@@ -36,8 +36,14 @@ class InMemoryStoreAdapter {
   }
 
 
-  #checkForFreshness(cache) {
-    if (cache.ttl !== 0 && cache.expires < new Date()) { // expired
+  #checkForFreshness(key) {
+    const cache = this.#cache[key];
+    if (!cache) return;
+    const now = new Date();
+    // console.log(key)
+    // console.log(cache.ttl !== 0 && cache.expires < now);
+    if (cache.ttl !== 0 && cache.expires < now) { // expired
+      console.log(`Deleting ${key}`)
       delete this.#cache[key];
       return;
     }
@@ -48,15 +54,22 @@ class InMemoryStoreAdapter {
 
   #activelyDeleteExpiredValues() {
     const keys = Object.keys(this.#cache);
-    const selectedKeys = [];
+    let selectedKeys = [];
 
-    for (let i = 0, c = Math.min(keys.length, 20); i < c; i++) {
-      const randomIndex = Math.floor(Math.random() * keys.length);
-      selectedKeys.push(keys[randomIndex]);
+    if (keys.length <= 20) {
+      selectedKeys = keys;
+    } else {
+      for (let i = 0, c = 20; i < c; i++) {
+        const randomIndex = Math.floor(Math.random() * keys.length);
+        const key = keys[randomIndex];
+        if (!selectedKeys.includes(key)) selectedKeys.push(keys[randomIndex]);
+      }
     }
 
+    console.log(`Checking ${selectedKeys.length} for expired values`);
+
     for (const key of selectedKeys) {
-      this.#checkForFreshness(this.#cache[key]);
+      this.#checkForFreshness(key);
     }
   }
 }
