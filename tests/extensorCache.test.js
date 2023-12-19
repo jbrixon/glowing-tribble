@@ -22,6 +22,22 @@ describe("extensorCache", () => {
   });
 
 
+  test("keys with variables are stored correctly", async () => {
+    const testKey = "user/0/config/0";
+    const testKey1 = "user/1/config/0";
+    const testValue = "123";
+    const testValue1 = "abc";
+
+    const config = new KeyConfig("user/{uid}/config/{config_id}");
+
+    await cache.put(testKey, testValue);
+    await cache.put(testKey1, testValue1);
+
+    expect(store.get(testKey)).toEqual(testValue);
+    expect(store.get(testKey1)).toEqual(testValue1);
+  });
+
+
   test("the promise is rejected if the requested key is not stored", async () => {
     const testKey = "test-key";
     expect.assertions(1);
