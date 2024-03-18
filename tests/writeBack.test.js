@@ -116,6 +116,7 @@ describe("write-back caching", () => {
     config.writeStrategy = WriteStrategies.writeBack;
     config.writeRetryCount = retries;
     config.writeRetryInterval = interval;
+    config.writeRetryBackoff = false;
     cache.register(config);
 
     const putPromise = cache.put(testPattern, testValue);
@@ -131,6 +132,84 @@ describe("write-back caching", () => {
     expect(callTimes[3] - callTimes[2]).toEqual(interval);
     expect(callTimes[2] - callTimes[1]).toEqual(interval);
     expect(callTimes[1] - callTimes[0]).toEqual(interval);
+  });
+
+
+  test("the callback is backed off", async () => {
+    jest.useFakeTimers();
+
+    const testPattern = "test/pattern";
+    const testValue = "result";
+    const retries = 3;
+    const interval = 100;
+
+    const callTimes = [];
+
+    const config = new KeyConfig(testPattern);
+    config.writeCallback = jest.fn(async () => {
+      callTimes.push(new Date());
+      throw new Error();
+    });
+    config.writeStrategy = WriteStrategies.writeBack;
+    config.writeRetryCount = retries;
+    config.writeRetryInterval = interval;
+    config.writeRetryBackoff = true;
+    cache.register(config);
+
+    const putPromise = cache.put(testPattern, testValue);
+    
+    // this might be flakey, but I can't be bothered to look into how the
+    // timeout call works. it seems to always work though.
+    // if it ever doesn't, we should fix it
+    for (let i = 0; i <= retries; i++) {
+      await jest.advanceTimersByTimeAsync(interval * 2 ** i)
+    }
+    await putPromise;
+  
+    expect(callTimes[1] - callTimes[0]).toEqual(interval);
+    expect(callTimes[2] - callTimes[1]).toBeGreaterThan(interval);
+    expect(callTimes[3] - callTimes[2]).toBeGreaterThan(interval);
+    expect(callTimes[3] - callTimes[2]).toBeGreaterThan(callTimes[2] - callTimes[1]);
+  });
+
+
+  test("the callback is backed off", async () => {
+    jest.useFakeTimers();
+
+    const testPattern = "test/pattern";
+    const testValue = "result";
+    const retries = 3;
+    const interval = 100;
+
+    const callTimes = [];
+
+    const config = new KeyConfig(testPattern);
+    config.writeCallback = jest.fn(async () => {
+      callTimes.push(new Date());
+      throw new Error();
+    });
+    config.writeStrategy = WriteStrategies.writeBack;
+    config.writeRetryCount = retries;
+    config.writeRetryInterval = interval;
+    config.writeRetryBackoff = true;
+    config.writeRetryIntervalCap = 200;
+    cache.register(config);
+
+    const putPromise = cache.put(testPattern, testValue);
+    
+    // this might be flakey, but I can't be bothered to look into how the
+    // timeout call works. it seems to always work though.
+    // if it ever doesn't, we should fix it
+    for (let i = 0; i <= retries; i++) {
+      await jest.advanceTimersByTimeAsync(interval * 2 ** i)
+    }
+    await putPromise;
+  
+    expect(callTimes[1] - callTimes[0]).toEqual(interval);
+    expect(callTimes[2] - callTimes[1]).toBeGreaterThan(interval);
+    expect(callTimes[2] - callTimes[1]).toBeLessThanOrEqual(config.writeRetryIntervalCap);
+    expect(callTimes[3] - callTimes[2]).toBeGreaterThan(interval);
+    expect(callTimes[3] - callTimes[2]).toBeLessThanOrEqual(config.writeRetryIntervalCap);
   });
 
 

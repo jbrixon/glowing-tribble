@@ -12,6 +12,8 @@ class KeyConfig {
     this.writeStrategy = writeStrategy;
     this.writeRetryCount = 1;
     this.writeRetryInterval = 1000;
+    this.writeRetryBackoff = true;
+    this.writeRetryIntervalCap = 60 * 60 * 1000;  // 1hr
     this.evictCallback = () => {};
     this.updateCallback = undefined;
   }

@@ -143,10 +143,12 @@ class ExtensorCache {
 
 
   async #writeBack(route, callback) {
-    const rejectDelay = (reason) => {
+    const rejectDelay = (reason, attempt) => {
       return new Promise((resolve, reject) => {
         console.info(`Write back for key '${route.context.key}' failed due to ${reason}`)
-        setTimeout(reject.bind(null, reason), route.keyConfig.writeRetryInterval);
+        const nextTimeout = route.keyConfig.writeRetryInterval * (route.keyConfig.writeRetryBackoff ? 2 ** attempt : 1);
+        const cappedTimeout = Math.min(route.keyConfig.writeRetryIntervalCap, nextTimeout);
+        setTimeout(reject.bind(null, reason), cappedTimeout);
       });
     };
 
@@ -160,7 +162,7 @@ class ExtensorCache {
 
     for (let i = 0; i < tryCount; i++) {
       p = p.catch(() => callback(route.context))
-            .catch(i < tryCount - 1 ? rejectDelay : rejectQuit);
+            .catch(i < tryCount - 1 ? (reason) => rejectDelay(reason, i) : rejectQuit);
     }
 
     return p;

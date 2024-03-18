@@ -68,6 +68,12 @@ config.readCallback = async (context) => {
 cache.register(config);
 ```
 
+### Retries
+When using the write-behind strategy, writes and deletes to a key will be automatically retried depending on the config you pass. By default, retries are exponentially backed off with jitter, with intervals calculated from the base retry interval you pass as `writeRetryInterval`. 
+
+This behaviour can be disabled or adjusted using the `writeRetryBackoff` and `writeRetryIntervalCap` 
+configuration values.
+
 ---
 ## Cache Configuration
 ###### ttl
@@ -153,6 +159,27 @@ config.writeRetryInterval = 3000; // waits 3000ms before retrying the write call
 cache.register(config);
 
 ```
+###### writeRetryBackoff
+```javascript
+const config = new KeyConfig("examples/{exampleName}");
+config.writeCallback = async (context) => {
+  return await someLongRunningFetch(context.params.exampleName);
+};
+config.writeRetryBackoff = false; // disable exponential backoff for retries.
+cache.register(config);
+```
+
+###### writeRetryIntervalCap
+```javascript
+const config = new KeyConfig("examples/{exampleName}");
+config.writeCallback = async (context) => {
+  return await someLongRunningFetch(context.params.exampleName);
+};
+config.writeRetryInterval = 3000; // waits 3000ms before retrying the write callback.
+config.writeRetryIntervalCap = 10 * 60 * 1000; // never wait more than 10 minutes between retries of the write callback.
+cache.register(config);
+```
+
 ###### evictCallback
 ```javascript
 const config = new KeyConfig("examples/{exampleName}");
