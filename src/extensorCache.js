@@ -8,10 +8,12 @@ import WriteStrategies from "./writeStrategies";
 
 class ExtensorCache {
   #store;
+  #globalConfig;
   #patternRegister;
   
-  constructor(store) {
+  constructor(store, globalConfig={}) {
     this.#store = store;
+    this.#globalConfig = globalConfig;
     this.#patternRegister = [];
   }
 
@@ -123,7 +125,7 @@ class ExtensorCache {
     if (!keyPatternIsvalid(config.pattern)) {
       throw new Error("Invalid key pattern!");
     }
-    this.#patternRegister.push(config);
+    this.#patternRegister.push({...this.#globalConfig, ...config});
   }
 
 

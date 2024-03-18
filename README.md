@@ -1,7 +1,7 @@
 # extensor-cache-js
 Extensor cache is a very simple, non-persistent application layer caching library, originally written for [Extensor](https://www.extensor.app), which helps to improve resiliency when you're doing read/write over a network.
 
-Extensor cache takes a callback and handles the caching logic, so you don't have to switch on your brain. A lot of the examples here refer to HTTP requests, but you can use it for any form of IO, as long as there is an async function to handle it.
+Extensor cache takes a callback and handles the caching and retry logic, so you don't have to switch on your brain. A lot of the examples here refer to HTTP requests, but you can use it for any form of IO, as long as there is an async function to handle it.
 
 Out of the box, it can handle various read/write strategies:
 - read-through
@@ -28,11 +28,11 @@ import {
 } from "extensor-cache";
 
 const cache = new ExtensorCache(new InMemoryStore());
-const config = new KeyConfig("examples/{exampleName}/objects/{object}");
-config.readCallback = async (context) => {
+const keyConfig = new KeyConfig("examples/{exampleName}/objects/{object}");
+keyConfig.readCallback = async (context) => {
   return await someLongRunningFetch(context.params.exampleName, context.params.object);
 }
-cache.register(config);
+cache.register(keyConfig);
 
 const value = await cache.get("examples/readme/objects/usage");
 console.log(value); // result of someLongRunningFetch("readme", "usage")
@@ -68,14 +68,68 @@ config.readCallback = async (context) => {
 cache.register(config);
 ```
 
-### Retries
-When using the write-behind strategy, writes and deletes to a key will be automatically retried depending on the config you pass. By default, retries are exponentially backed off with jitter, with intervals calculated from the base retry interval you pass as `writeRetryInterval`. 
+---
 
+## Retries
+When using the write-behind strategy, writes and deletes to a key will be automatically retried depending on the config you pass. By default, retries are exponentially backed off with jitter, with intervals calculated from the base retry interval you pass as `writeRetryInterval`. 
 This behaviour can be disabled or adjusted using the `writeRetryBackoff` and `writeRetryIntervalCap` 
 configuration values.
 
 ---
-## Cache Configuration
+
+## Global Config
+Global configuration that applies default for all keys can be set by passing an instance
+of GlobalConfig as the second argument to the constructor of ExtensorCache.
+```javascript
+import {
+  GlobalConfig,
+  ExtensorCache,
+  InMemoryStore,
+  KeyConfig,
+} from "extensor-cache";
+
+const globalConfig = GlobalConfig();
+globalConfig.ttl = 15 * 60;  // set the TTL of all keys to 15 mins.
+const cache = new ExtensorCache(new InMemoryStore(), globalConfig);
+const keyConfig = new KeyConfig("examples/{exampleName}/objects/{object}");
+keyConfig.readCallback = async (context) => {
+  return await someLongRunningFetch(context.params.exampleName, context.params.object);
+}
+cache.register(keyConfig);
+
+const value = await cache.get("examples/readme/objects/usage");
+console.log(value); // result of someLongRunningFetch("readme", "usage")
+
+```
+
+### Configuration options
+###### ttl
+Default time in seconds for cache entries to live.
+
+###### readStrategy
+Default read strategy.
+
+###### writeStrategy
+Default write strategy.
+
+###### writeRetryCount
+Default number of times that a failed write should be retried. Only relevant if write strategy is write-behind.
+
+###### writeRetryInterval
+Default base time to wait before retrying a failed write. This is the time waited until the first retry is made. Further retries will be exponentially backed off (unlesss disabled). Only relevant if write strategy is write-behind.
+
+###### writeRetryBackoff
+When true, subsequent write retries will be exponentially backed off with jitter. Defaults to true. Only relevant if write strategy is write-behind.
+
+###### writeRetryIntervalCap
+The maximum time that should be waited between retries. Defaults to 1 hour. Only relevant if exponential backoff is enabled and the write strategy is write-behind.
+
+### Overriding global config
+All global config values can be overridden at the individual key level using the KeyConfiguration object as shown below.
+
+---
+
+## Key-Level Configuration
 ###### ttl
 ```javascript
 const config = new KeyConfig("examples/{exampleName}");
